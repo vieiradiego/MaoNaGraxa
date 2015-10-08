@@ -1,0 +1,58 @@
+<project name="MaoNaGraxa" basedir="." default="deploy">
+
+	<!-- Declara as propriedades do build -->
+	<property name="jboss.server.home" value="/home/diegovieira/java/wildfly-9.0.1.Final" />
+	<property name="jboss.lib.dir" value="${jboss.server.home}/modules" />
+	<property name="jboss.deploy.dir" value="${jboss.server.home}/standalone/deployments" />
+	<property name="classes.dir" value="WebContent/WEB-INF/classes" />
+
+	<!-- Informa onde estão as dependências para compilação -->
+	<path id="compile.class.path">
+		<fileset dir="${jboss.lib.dir}" includes="**/*.jar" />
+		<pathelement path="${java.class.path}/" />
+	</path>
+
+	<!-- Cria as pastas necessárias -->
+	<target name="init">
+		<mkdir dir="${classes.dir}" />
+		<mkdir dir="dist" />
+	</target>
+
+	<!-- Compila o código Java -->
+	<target name="compile" depends="init">
+		<javac srcdir="src" destdir="${classes.dir}" includes="**/*.java">
+			<classpath refid="compile.class.path" />
+		</javac>
+	</target>
+
+	<!-- Faz o empacotamento da aplicação -->
+	<target name="war" depends="compile">
+		<war destfile="dist/${ant.project.name}.war">
+			<zipfileset dir="WebContent">
+				<include name="**/*" />
+				<exclude name="resources/msg/*" />
+			</zipfileset>
+			<classes dir="WebContent/resources">
+				<include name="**/*.properties" />
+			</classes>
+		</war>
+	</target>
+
+	<!-- Disponibiliza aplicação no servidor -->
+	<target name="deploy" depends="war">
+		<copy file="dist/${ant.project.name}.war" todir="${jboss.deploy.dir}" />
+	</target>
+
+	<!-- Desinstala a aplicação do servidor -->
+	<target name="undeploy">
+		<delete file="${jboss.deploy.dir}/${ant.project.name}.war" />
+	</target>
+
+	<!-- Volta o projeto ao seu estado original -->
+	<target name="clean">
+		<delete dir="dist" />
+		<delete dir="${classes.dir}" />
+	</target>
+
+</project>
+
